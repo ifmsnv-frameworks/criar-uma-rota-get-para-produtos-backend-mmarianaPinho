@@ -6,7 +6,7 @@ import express, { Request, Response } from 'express';
 const app = express();
 
 app.get('/', async (req: Request, res: Response) => {
-    if (!process.env.DBUSER) {
+    if (!process.env.DBUSER) {//! significa que é a negação da variável
         res.status(500).send("Variável de ambiente DBUSER não está definida")
         return;
     }
@@ -58,21 +58,26 @@ app.get('/produtos', async (req, res) => {
         res.status(500).send("DBDATABASE não está definido nas variáveis de ambiente");
         return;
     }
+    if (process.env.DBNAME === undefined) {
+        res.status(500).send("DBDATABASE não está definido nas variáveis de ambiente");
+        return;
+    }
     if (process.env.DBPORT === undefined) {
         res.status(500).send("DBPORT não está definido nas variáveis de ambiente");
         return;
     }
     try { 
-        const conn = await mysql.createConnection({
+        const connection = await mysql.createConnection({
             host: process.env.DBHOST,
             user: process.env.DBUSER,
             password: process.env.DBPASSWORD,
             database: process.env.DBDATABASE,
+            name:process.env.DBNAME,
             port: Number(process.env.DBPORT)
         });
         const x = await conn.query('SELECT id, nome, preco, urlfoto, descricao FROM produtos');
         res.json(x);
-        await conn.end();
+        await connection.end();
     } catch (erro) {
 
         res.status(500).send("Erro ao consultar produtos: " + erro);
