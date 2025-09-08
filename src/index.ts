@@ -41,7 +41,48 @@ app.get('/', async (req: Request, res: Response) => {
         res.status(500).send("Erro ao conectar ao banco de dados: " + error);
     }
 });
+app.get('/produtos', async (req, res) => {
+    if (process.env.DBHOST === undefined) {
+        res.status(500).send("DBHOST não está definido nas variáveis de ambiente");
+        return;
+    }
+    if (process.env.DBUSER === undefined) {
+        res.status(500).send("DBUSER não está definido nas variáveis de ambiente");
+        return;
+    }
+    if (process.env.DBPASSWORD === undefined) {
+        res.status(500).send("DBPASSWORD não está definido nas variáveis de ambiente");
+        return;
+    }
+    if (process.env.DBDATABASE === undefined) {
+        res.status(500).send("DBDATABASE não está definido nas variáveis de ambiente");
+        return;
+    }
+    if (process.env.DBNAME === undefined) {
+        res.status(500).send("DBDATABASE não está definido nas variáveis de ambiente");
+        return;
+    }
+    if (process.env.DBPORT === undefined) {
+        res.status(500).send("DBPORT não está definido nas variáveis de ambiente");
+        return;
+    }
+    try { 
+        const connection = await mysql.createConnection({
+            host: process.env.DBHOST,
+            user: process.env.DBUSER,
+            password: process.env.DBPASSWORD,
+            database: process.env.DBDATABASE,
+            name:process.env.DBNAME,
+            port: Number(process.env.DBPORT)
+        });
+        const x = await conn.query('SELECT id, nome, preco, urlfoto, descricao FROM produtos');
+        res.json(x);
+        await connection.end();
+    } catch (erro) {
 
+        res.status(500).send("Erro ao consultar produtos: " + erro);
+    }
+});
 
 //Tarefa: Criar uma rota get para produtos que retorne a lista de produtos do banco de dados
 //O produto deve ter id, nome preco, urlfoto, descricao
@@ -57,10 +98,7 @@ CREATE TABLE produtos (
     descricao TEXT
 );
 Faz pelo menos 3 inserções nessa tabela
-*/ 
-
-
-
+*/
 
 app.listen(8000, () => {
     console.log('Server is running on port 8000');
